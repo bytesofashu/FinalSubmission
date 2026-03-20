@@ -38,13 +38,14 @@ export async function getHeartPrediction(data: HealthData): Promise<HeartPredict
     model,
     contents: prompt,
     config: {
+      systemInstruction: "You are a professional cardiologist AI. Provide accurate, evidence-based heart health predictions and actionable recommendations. Be direct, clear, and prioritize safety. Always recommend consulting a human doctor for medical decisions.",
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          timeline: { type: Type.STRING },
-          warning: { type: Type.STRING },
-          recommendations: { type: Type.STRING },
+          timeline: { type: Type.STRING, description: "A detailed but concise heart health timeline based on the data." },
+          warning: { type: Type.STRING, description: "Specific risks or warnings the user should be aware of." },
+          recommendations: { type: Type.STRING, description: "Markdown formatted list of actionable health steps." },
         },
         required: ["timeline", "warning", "recommendations"],
       },
