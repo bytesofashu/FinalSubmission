@@ -1,0 +1,5 @@
+{
+  "name": "HeartTwin",
+  "description": "Digital twin for heart health monitoring and cardiologist discovery.",
+  "requestFramePermissions": []
+}

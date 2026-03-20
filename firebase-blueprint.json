@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and health data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "age": { "type": "number" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "bloodPressure": { "type": "string" },
+        "cholesterol": { "type": "number" },
+        "smoking": { "type": "boolean" },
+        "exercise": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Prediction": {
+      "title": "Prediction",
+      "description": "Heart health prediction from Gemini",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "timeline": { "type": "string" },
+        "warning": { "type": "string" },
+        "recommendations": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "timeline"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data"
+    },
+    "/users/{userId}/predictions/{predictionId}": {
+      "schema": "Prediction",
+      "description": "Heart health predictions for a user"
+    }
+  }
+}

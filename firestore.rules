@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Document ID: userId (UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string (optional)
+    //   - age: number (optional)
+    //   - weight: number (optional)
+    //   - height: number (optional)
+    //   - bloodPressure: string (optional)
+    //   - cholesterol: number (optional)
+    //   - smoking: bool (optional)
+    //   - exercise: string (optional)
+    //   - createdAt: timestamp (optional)
+    //
+    // Collection: /users/{userId}/predictions/{predictionId}
+    // Document ID: predictionId (Auto-generated)
+    // Fields:
+    //   - userId: string (required)
+    //   - timeline: string (required)
+    //   - warning: string (optional)
+    //   - recommendations: string (optional)
+    //   - createdAt: timestamp (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidPrediction(data) {
+      return data.keys().hasAll(['userId', 'timeline']) &&
+             data.userId is string && data.userId.size() > 0 &&
+             data.timeline is string && data.timeline.size() > 0;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "notifyashu@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /predictions/{predictionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidPrediction(request.resource.data);
+        allow update: if isOwner(userId) && isValidPrediction(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+  }
+}
